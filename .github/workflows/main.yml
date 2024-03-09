@@ -18,8 +18,8 @@ jobs:
     #      - prod(本番)、stg(ステージング）の2つのEnvironmentsを作成
     #      - GitHubへのイベントを元に切り替える
     #          - mainブランチへのpull_request: stg 
-    #          - mainブランチへのpush        : stg 
-    #          - リリース: prod 
+    #          - mainブランチへのpush/マージ : stg 
+    #          - リリース                    : prod 
     environment:
       name: >-
         ${{
