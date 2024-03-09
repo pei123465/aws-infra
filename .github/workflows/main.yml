@@ -18,8 +18,8 @@ jobs:
     #      - prod(本番)、stg(ステージング）の2つのEnvironmentsを作成
     #      - GitHubへのイベントを元に切り替える
     #          - mainブランチへのpull_request: stg 
-    #          - mainブランチへのpush        : stg 
-    #          - リリース: prod 
+    #          - mainブランチへのpush/マージ : stg 
+    #          - リリース                    : prod 
     environment:
       name: >-
         ${{
@@ -53,7 +53,7 @@ jobs:
 
       - name: CDK Diff Check
         if: contains(github.event_name, 'pull_request')
-        run: npm run cdk:diff
+        run: npm run cdk:diff --env=${{vars.env}}
 
       - name: CDK Deploy
         if: contains(github.event_name, 'push') || contains(github.event_name, 'release') 
