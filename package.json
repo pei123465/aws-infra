@@ -9,7 +9,7 @@
     "watch": "tsc -w",
     "test": "jest",
     "cdk": "cdk",
-    "cdk:diff": "cdk diff || true",
+    "cdk:diff": "cdk diff -c env=${npm_config_env} || true",
     "cdk:deploy": "cdk deploy -c env=${npm_config_env} --require-approval never"
   },
   "devDependencies": {
