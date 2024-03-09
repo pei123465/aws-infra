@@ -4,10 +4,29 @@ on:
     branches:
       - main
   pull_request:
+  release:
+    types:
+      - published
+    branches:
+      - main
 jobs:
   build-test-deploy:
     runs-on: ubuntu-latest
-    environment: 'prod'
+    # 各環境固有の情報をGitHubのEnvironmentに格納している。
+    #  例：AWSアカウントID、S3情報、IAMロール、環境名(dev,prd,stg)など
+    #     本コードでは以下のように定義しています。
+    #      - prod(本番)、stg(ステージング）の2つのEnvironmentsを作成
+    #      - GitHubへのイベントを元に切り替える
+    #          - mainブランチへのpull_request: stg 
+    #          - mainブランチへのpush        : stg 
+    #          - リリース: prod 
+    environment:
+      name: >-
+        ${{
+          contains(github.event_name, 'pull_request') && 'stg' ||
+          contains(github.event_name, 'push')         && 'stg' ||
+          'prod'
+        }}
     permissions:
       id-token: write
       contents: read
@@ -24,7 +43,7 @@ jobs:
         uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-region: ap-northeast-1
-          role-to-assume:  ${{ secrets.AWS_DEPLOY_IAM_ROLE_ARN }} # Gitデプロイ用のAWS IAM ロールの ARN
+          role-to-assume: ${{secrets.AWS_DEPLOY_IAM_ROLE_ARN}} # Gitデプロイ用のAWS IAM ロールの ARN
 
       - name: Setup dependencies
         run: npm ci
@@ -33,10 +52,10 @@ jobs:
         run: npm run build
 
       - name: CDK Diff Check
-        # if: contains(github.event_name, 'pull_request')
+        if: contains(github.event_name, 'pull_request')
         run: npm run cdk:diff
 
       - name: CDK Deploy
-        # if: contains(github.event_name, 'push') 
+        if: contains(github.event_name, 'push') || contains(github.event_name, 'release') 
         run: npm run cdk:deploy
 
